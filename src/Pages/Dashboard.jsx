@@ -3,17 +3,21 @@ import { Link } from "react-router-dom";
 import { useRef } from "react";
 import {
   ResponsiveContainer,
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  Cell,
 } from "recharts";
 import "./Dashboard.css";
-import { fetchSubmissions, fetchLatest, insertSubmission,deleteSubmission } from "../lib/vaxDB";
+import {
+  fetchSubmissions,
+  fetchLatest,
+  insertSubmission,
+  deleteSubmission,
+} from "../lib/vaxDB";
 
 const PALETTE = ["#2563eb", "#16a34a", "#f59e0b", "#ef4444", "#0ea5a4"];
 
@@ -29,6 +33,79 @@ export default function Dashboard({ cases = [] }) {
     lostTime: 0,
     outbreak: 0,
   });
+
+  // date utils
+  const parseDate = (v) => {
+    if (!v) return null;
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? null : d;
+  };
+
+  // Monday-start week
+  const startOfWeek = (date) => {
+    const d = new Date(date);
+    const day = (d.getDay() + 6) % 7; // 0=Mon ... 6=Sun
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - day);
+    return d;
+  };
+
+  const fmtWeekLabel = (weekStart) =>
+    weekStart.toLocaleDateString(undefined, { month: "short", day: "2-digit" });
+
+  // clamp + 1 decimal
+  const pct1 = (num, den) => {
+    if (!den) return 0;
+    const p = (num / den) * 100;
+    return Math.min(100, Math.max(0, Math.round(p * 10) / 10));
+  };
+
+  /**
+   * Build weekly series:
+   * - choose the *latest* submission in each week (by created_at/date)
+   * - output: [{ weekISO, label, staffPct, residentPct }]
+   */
+  const toWeeklySeries = (rows) => {
+    if (!rows?.length) return [];
+    // normalize rows
+    const norm = rows
+      .map((r) => ({
+        date: parseDate(r.date_submitted ?? r.dateOnly ?? r.dateISO ?? r.date),
+        created_at: parseDate(r.created_at) ?? null,
+        staff: r.staff_count ?? r.staff ?? 0,
+        resident: r.resident_count ?? r.residents ?? 0,
+      }))
+      .filter((r) => r.date);
+
+    // newest last so "latest in week" overwrite logic works or sort asc then keep latest explicitly
+    norm.sort(
+      (a, b) =>
+        a.date - b.date || (a.created_at ?? a.date) - (b.created_at ?? b.date)
+    );
+
+    const byWeek = new Map();
+    for (const r of norm) {
+      const wk = startOfWeek(r.date);
+      const key = wk.toISOString().slice(0, 10); // YYYY-MM-DD
+      const existing = byWeek.get(key);
+      // keep the latest in that week
+      if (
+        !existing ||
+        (r.created_at ?? r.date) > (existing.created_at ?? existing.date)
+      ) {
+        byWeek.set(key, { ...r, weekStart: wk });
+      }
+    }
+
+    return [...byWeek.values()]
+      .sort((a, b) => a.weekStart - b.weekStart)
+      .map((r) => ({
+        weekISO: r.weekStart.toISOString().slice(0, 10),
+        label: fmtWeekLabel(r.weekStart),
+        staffPct: pct1(r.staff, TOTAL.staff),
+        residentPct: pct1(r.resident, TOTAL.resident),
+      }));
+  };
 
   const [bump, setBump] = useState({
     covidStaff: 0,
@@ -58,8 +135,7 @@ export default function Dashboard({ cases = [] }) {
   const covidResident = covidResidentBase + bump.covidResident;
   const fluStaff = fluStaffBase + bump.fluStaff;
   const fluResident = fluResidentBase + bump.fluResident;
-  
-  
+
   function MiniCounter({
     label,
     value, // controlled value from parent
@@ -316,6 +392,9 @@ export default function Dashboard({ cases = [] }) {
     }
   };
 
+  const covidWeekly = useMemo(() => toWeeklySeries(log.covid), [log.covid]);
+  const fluWeekly = useMemo(() => toWeeklySeries(log.flu), [log.flu]);
+
   return (
     <div className="dashboard">
       <div className="header-row">
@@ -356,7 +435,7 @@ export default function Dashboard({ cases = [] }) {
                 value={covidStaff}
                 onDecrement={() => dec("covidStaff")}
                 onIncrement={() => inc("covidStaff")}
-                onSet={setAbs("covidStaff", covidStaffBase)} 
+                onSet={setAbs("covidStaff", covidStaffBase)}
               />
 
               <MiniCounter
@@ -364,8 +443,7 @@ export default function Dashboard({ cases = [] }) {
                 value={covidResident}
                 onDecrement={() => dec("covidResident")}
                 onIncrement={() => inc("covidResident")}
-                onSet={setAbs("covidResident", covidResidentBase)} 
-
+                onSet={setAbs("covidResident", covidResidentBase)}
               />
             </div>
 
@@ -439,6 +517,39 @@ export default function Dashboard({ cases = [] }) {
               </table>
             </div>
           )}
+          {covidWeekly.length > 0 && (
+            <div className="chart-card">
+              <div className="chart-title">
+                COVID — Weekly % (latest per week)
+              </div>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart
+                  data={covidWeekly}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="label" />
+                  <YAxis domain={[0, 100]} tickFormatter={(t) => `${t}%`} />
+                  <Tooltip formatter={(v) => `${v}%`} />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="staffPct"
+                    name="Staff %"
+                    stroke="#2563eb"
+                    dot={{ r: 2 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="residentPct"
+                    name="Resident %"
+                    stroke="#10b981"
+                    dot={{ r: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </section>
 
         {/* Vertical divider */}
@@ -484,7 +595,7 @@ export default function Dashboard({ cases = [] }) {
                 value={fluResident}
                 onDecrement={() => dec("fluResident")}
                 onIncrement={() => inc("fluResident")}
-                 onSet={setAbs("fluResident", fluResidentBase)}
+                onSet={setAbs("fluResident", fluResidentBase)}
               />
             </div>
 
@@ -557,6 +668,39 @@ export default function Dashboard({ cases = [] }) {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+          {fluWeekly.length > 0 && (
+            <div className="chart-card">
+              <div className="chart-title">
+                Influenza — Weekly % (latest per week)
+              </div>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart
+                  data={fluWeekly}
+                  margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="label" />
+                  <YAxis domain={[0, 100]} tickFormatter={(t) => `${t}%`} />
+                  <Tooltip formatter={(v) => `${v}%`} />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="staffPct"
+                    name="Staff %"
+                    stroke="#7c3aed"
+                    dot={{ r: 2 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="residentPct"
+                    name="Resident %"
+                    stroke="#ef4444"
+                    dot={{ r: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           )}
         </section>
