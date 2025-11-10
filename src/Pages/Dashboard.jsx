@@ -13,7 +13,7 @@ import {
   Cell,
 } from "recharts";
 import "./Dashboard.css";
-import { fetchSubmissions, fetchLatest, insertSubmission,deleteSubmission } from "../lib/vaxDb";
+import { fetchSubmissions, fetchLatest, insertSubmission,deleteSubmission } from "../lib/vaxDB";
 
 const PALETTE = ["#2563eb", "#16a34a", "#f59e0b", "#ef4444", "#0ea5a4"];
 
