@@ -58,7 +58,8 @@ export default function Dashboard({ cases = [] }) {
   const covidResident = covidResidentBase + bump.covidResident;
   const fluStaff = fluStaffBase + bump.fluStaff;
   const fluResident = fluResidentBase + bump.fluResident;
-
+  
+  
   function MiniCounter({
     label,
     value, // controlled value from parent
@@ -355,6 +356,7 @@ export default function Dashboard({ cases = [] }) {
                 value={covidStaff}
                 onDecrement={() => dec("covidStaff")}
                 onIncrement={() => inc("covidStaff")}
+                onSet={setAbs("covidStaff", covidStaffBase)} 
               />
 
               <MiniCounter
@@ -362,6 +364,8 @@ export default function Dashboard({ cases = [] }) {
                 value={covidResident}
                 onDecrement={() => dec("covidResident")}
                 onIncrement={() => inc("covidResident")}
+                onSet={setAbs("covidResident", covidResidentBase)} 
+
               />
             </div>
 
@@ -472,6 +476,7 @@ export default function Dashboard({ cases = [] }) {
                 value={fluStaff}
                 onDecrement={() => dec("fluStaff")}
                 onIncrement={() => inc("fluStaff")}
+                onSet={setAbs("fluStaff", fluStaffBase)}
               />
 
               <MiniCounter
@@ -479,6 +484,7 @@ export default function Dashboard({ cases = [] }) {
                 value={fluResident}
                 onDecrement={() => dec("fluResident")}
                 onIncrement={() => inc("fluResident")}
+                 onSet={setAbs("fluResident", fluResidentBase)}
               />
             </div>
 
