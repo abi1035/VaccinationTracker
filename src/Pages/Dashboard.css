@@ -1,0 +1,252 @@
+.dashboard {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+}
+
+.card-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1;
+  min-width: 200px;
+  min-height: 160px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;                 /* center both vertically & horizontally */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 1.3rem;             /* bigger label */
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #111827;                /* dark gray */
+}
+
+.stat-card h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.stat-value {
+  font-size: 2.2rem;             /* bigger number */
+  font-weight: bold;
+  color: #0073e6;                /* blue number */
+}
+
+.stat-card p {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #0073e6;
+}
+
+.card-grid.split {
+  position: relative;
+  align-items: stretch;
+}
+
+.pair {
+  flex: 1;
+  min-width: 320px;
+}
+.pair-footer {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: .25rem 0; position: relative; z-index: 1;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+.pair-submit-row {
+  display: flex;
+  justify-content: center;  
+  padding-top: .45rem;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 13px;
+}
+
+
+
+.pair-footer .submit-btn { margin-left: 0; }
+
+.submit-btn {
+  border: none;
+  padding: .45rem .8rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: .85rem;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,.06);
+}
+
+.submit-btn.danger { background: #dc2626; color: #fff; }   /* red-600 */
+.submit-btn.danger:hover { background: #b91c1c; }          /* red-700 */
+.submit-btn.danger:active { transform: translateY(1px); }
+
+/* push the button to the right in the footer row */
+.pair-footer .submit-btn { margin-left: auto; }
+
+.pair-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: #374151;           /* subtle gray */
+  margin: .25rem 0 .6rem .25rem;
+}
+
+.pair-meta { display:flex; align-items:center; gap:.6rem; margin:-.1rem 0 .8rem .25rem; flex-wrap:wrap; }
+
+.mini-counter { display:inline-flex; gap:.45rem; align-items:center; }
+.mini-label { font-size:.75rem; font-weight:700; text-transform:uppercase; color:#6b7280; }
+.mini-value { font-variant-numeric:tabular-nums; font-weight:800; color:#111827; }
+.mini-btn {
+  width:1.6rem; height:1.6rem; border-radius:999px;
+  border:1px solid #d1d5db; background:#fff; font-weight:800;
+  line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+}
+.mini-btn:hover { background:#f9fafb; }
+.mini-btn:active { transform:translateY(1px); }
+
+.bullet { color: #d1d5db; }
+
+.pair-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+/* subtle vertical divider */
+.pair-divider {
+  width: 0;
+  border-left: 1px solid rgba(0, 0, 0, 0.582);
+  box-shadow: 0 0 18px rgba(0,0,0,.08);  /* soft shadowy glow */
+  margin: 0 .5rem;
+}
+
+/* responsive: stack on small screens */
+@media (max-width: 900px) {
+  .card-grid.split { flex-direction: column; }
+  .pair-grid { grid-template-columns: 1fr; }
+  .pair-divider { display: none; }
+}
+
+.note-input {
+  min-width: 180px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  padding: .4rem .7rem;
+  outline: none;
+}
+.note-input:focus { border-color: #9ca3af; box-shadow: 0 0 0 3px rgba(59,130,246,.1); }
+
+.submit-log { margin-top: .75rem; }
+.submit-log table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.submit-log th, .submit-log td { padding: .5rem .6rem; border-top: 1px solid #eee; text-align: left; }
+.submit-log th { background: #fafafa; color: #374151; font-weight: 700; }
+
+/* Card wrapper so it won't clash with the vertical divider */
+.table-card {
+  margin-top: .6rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  overflow: hidden;
+  position: relative;
+  z-index: 1; /* sits above divider */
+}
+
+/* Table layout */
+.submit-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed; /* enforces colgroup widths */
+  font-size: .92rem;
+}
+
+/* Columns */
+.submit-table .col-date  { width: 40%; }
+.submit-table .col-num   { width: 16%; }
+.submit-table .col-notes { width: 44%; }
+
+/* Header */
+.submit-table thead th {
+  background: #f9fafb;
+  color: #374151;
+  font-weight: 700;
+  text-align: left;
+  padding: .6rem .8rem;
+  position: sticky; top: 0; z-index: 2; /* stays visible if table scrolls */
+}
+
+/* Cells */
+.submit-table tbody td {
+  padding: .6rem .8rem;
+  border-top: 1px solid #f1f5f9;
+  vertical-align: top;
+  color: #111827;
+}
+
+/* Right-align numbers; tabular numerals for clean columns */
+.submit-table td.num {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.submit-table .col-actions { width: 92px; }
+.submit-table th:last-child, .submit-table td.actions { text-align: right; }
+
+.icon-btn {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 8px;
+  padding: .3rem .5rem;
+  cursor: pointer;
+}
+.icon-btn:hover { background: #f9fafb; }
+.icon-btn.danger { color: #b91c1c; border-color: #f3d2d2; }
+.icon-btn.danger:hover { background: #fee2e2; }
+
+/* Notes wrap nicely */
+.submit-table td.notes {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Zebra + hover for readability */
+.submit-table tbody tr:nth-child(even) td { background: #fcfcfc; }
+.submit-table tbody tr:hover td { background: #f5f7ff; }
+
+/* If you cap height, the header will stick */
+.table-card { max-height: 260px; overflow: auto; }
+
+
+.mini-input {
+  width: 2.5rem;
+  text-align: center;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: .2rem .3rem;
+  font-weight: 800;
+}
+.mini-input:focus {
+  outline: none;
+  border-color: #9ca3af;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.10);
+}
+/* hide number spinners on WebKit (in case you switch to type=number) */
+.mini-input::-webkit-outer-spin-button,
+.mini-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+
